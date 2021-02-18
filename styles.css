@@ -1,0 +1,51 @@
+*, *::after, *:before {
+    box-sizing: border-box;
+}
+
+
+.main {
+    position: absolute;
+    left: 50%;
+    width: 500px;
+    height: 1000px;
+    transform: translateX(-50%);
+}
+
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    width: 500px;
+}
+
+.square {
+    width: 50px;
+    height: 50px;
+    background: black;
+}
+
+.iBlock {
+    background: cyan;
+
+}
+.jBlock {
+    background: blue;
+
+}
+.lBlock {
+    background: orange;
+
+}
+.oBlock {
+
+    background: yellow;
+}
+.zBlock {
+
+    background: red;
+}
+.tBlock {
+    background: purple;
+}
+.sBlock {
+    background: green;
+}
