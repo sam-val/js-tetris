@@ -1,36 +1,47 @@
 // constants:
-const GRID_W = 10;
-const GRID_H = 20;
+const GRID_W = 12;
+const GRID_H = 19;
 const FPS = 1;
 const grid = document.querySelector(".grid");
-const START_POS = 0;
+const START_POS = -GRID_W*2 + Math.floor(GRID_W/4);
+const BLOCK_AREA_WIDTH = 5;
+CENTER_PIECE_X = 2;
+CENTER_PIECE_Y = 2;
+
 
 
 // game variables:
 piece_pos = START_POS;
 piece_array = new Array(4*4);
 board_array = new Array(GRID_W*GRID_H);
+board_array.fill(0);
 current_piece = Math.floor(Math.random() * 7 + 1);
 // current_piece = 1;
 // intialising:
     // make grid:
-for (let x = 0; x < GRID_W*GRID_H; x++) {
+for (let y = 0; y < GRID_H; y++) {
+    for (let x = 0; x < GRID_W; x++) {
         let square = document.createElement("div");
         square.classList.add("square");
+        if (x === 0 || x === GRID_W -1 || y === GRID_H - 1) {
+            square.classList.add("border");
+            board_array[y*GRID_W + x] = -1;
+        }
         grid.appendChild(square);
-    
+        
+    }
 }
 // MAKE THE PIECE:
 setPiece(current_piece);
 
 // draw new piece:
-    for (let x = 0; x < 4; x++) {
-        for (let y = 0; y < 4; y++) {
-            if (piece_array[y*4 + x]) {
-                drawSquare(piece_pos + y*GRID_W + x, current_piece);
-            }
-        }
-    }
+    // for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+    //     for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+    //         if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
+    //             drawSquare(piece_pos + y*GRID_W + x, current_piece);
+    //         }
+    //     }
+    // }
 
 // game functions:
 
@@ -49,75 +60,74 @@ function setPiece(n) {
     function setShape(y, line) {
         for (let i = 0; i < line.length; i++) {
             if (line[i] === "X") {
-                piece_array[y*4 + i] = 1;
+                piece_array[y*BLOCK_AREA_WIDTH + i] = 1;
             }
         }
     }
 
     if (n === 1) {
 
-        setShape(0, "....");
-        setShape(1, "XXXX");
-        setShape(2, "....");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, ".....");
+        setShape(2, ".XXXX");
+        setShape(3, ".....");
+        setShape(4, ".....");
 
     } else if (n === 2) {
-        setShape(0, "....");
-        setShape(1, ".X..");
-        setShape(2, ".XXX");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, ".X...");
+        setShape(2, ".XXX.");
+        setShape(3, ".....");
+        setShape(4, ".....");
         
     } else if (n === 3) {
-        setShape(0, "....");
-        setShape(1, "...X");
-        setShape(2, ".XXX");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, "...X.");
+        setShape(2, ".XXX.");
+        setShape(3, ".....");
+        setShape(4, ".....");
         
     } else if (n === 4) {
-        setShape(0, "....");
-        setShape(1, ".XX.");
-        setShape(2, ".XX.");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, "..XX.");
+        setShape(2, "..XX.");
+        setShape(3, ".....");
+        setShape(4, ".....");
         
     } else if (n === 5) {
-        setShape(0, "...");
-        setShape(1, ".XX.");
-        setShape(2, "XX..");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, "..XX.");
+        setShape(2, ".XX..");
+        setShape(3, ".....");
+        setShape(3, ".....");
         
     } else if (n === 6) {
-        setShape(0, "....");
-        setShape(1, ".X..");
-        setShape(2, "XXX.");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, "..X..");
+        setShape(2, ".XXX.");
+        setShape(3, ".....");
+        setShape(3, ".....");
         
     } else if (n === 7) {
-        setShape(0, "....");
-        setShape(1, "XX..");
-        setShape(2, ".XX.");
-        setShape(3, "....");
+        setShape(0, ".....");
+        setShape(1, ".XX..");
+        setShape(2, "..XX.");
+        setShape(3, ".....");
+        setShape(3, ".....");
         
     }
 }
 
-function checkPos(new_pos, direction) {
-    for (let x = 0; x < 4; x++) {
-        for (let y = 0; y < 4; y++) {
-            if (piece_array[y*4 + x]) {
-                // if outside of board:
+function checkPos(new_pos, array) {
+    for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+        for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+            if (array[y*BLOCK_AREA_WIDTH + x]) {
+                // if outside of board or over lap:
                 let board_pos = new_pos + y*GRID_W + x;
-                if ((board_pos > board_array.length - 1) || board_pos < 0) {
-                    return false;
-                } else if (board_array[board_pos]) {
+                if (board_array[board_pos]) {
                     return false; 
-                } else if (direction == "ArrowLeft") {
-                    if ((board_pos + 1) % GRID_W === 0) {
-                        return false;
-                    }
-                } else if (direction == "ArrowRight") {
-                    if ((board_pos - 1) % GRID_W === (GRID_W-1)) {
-                        return false;
-                    }
+                } else if (board_array[board_pos] === -1) {
+                    return false;
                 }
             }
         }
@@ -128,9 +138,9 @@ function checkPos(new_pos, direction) {
 }
 
 function lockAndDrawBoard() {
-    for (let x = 0; x < 4; x++) {
-        for (let y = 0; y < 4; y++) {
-            if (piece_array[y*4 + x]) {
+    for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+        for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+            if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
                 let pos = piece_pos + y*GRID_W + x;
                 board_array[pos] = current_piece;
             }
@@ -179,10 +189,15 @@ function drawSquare(pos, piece) {
 }
 
 function drawPiece() {
-        for (let x = 0; x < 4; x++) {
-            for (let y = 0; y < 4; y++) {
-                if (piece_array[y*4 + x]) {
-                    drawSquare(piece_pos + y*GRID_W + x, current_piece);
+        for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+            for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+                if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
+                    let pos = piece_pos + y*GRID_W + x;
+                    if (pos < 0) {
+                        continue;
+                    } else {
+                        drawSquare(pos, current_piece);
+                    }
                 }
             }
         }
@@ -191,29 +206,47 @@ function drawPiece() {
 }
 
 function unDrawPiece() {
-        for (let x = 0; x < 4; x++) {
-            for (let y = 0; y < 4; y++) {
-                if (piece_array[y*4 + x]) {
-                    removeSquare(piece_pos + y*GRID_W + x);
+        for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+            for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+                if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
+                    let pos = piece_pos + y*GRID_W + x;
+                    if (pos < 0) {
+                        continue;
+                    } else {
+                        removeSquare(pos, current_piece);
+                    }
                 }
             }
         }
 
 }
 
+
+function rotateClockWise(x,y) {
+    let [rel_x, rel_y] =  [x - CENTER_PIECE_X, y - CENTER_PIECE_Y];
+    let [new_rel_x, new_rel_y] = [rel_y, rel_x*-1];
+    return [CENTER_PIECE_X + new_rel_x, CENTER_PIECE_Y + new_rel_y];
+}
+
 // game loop:
 setTimeout(clock, 1000/FPS)
 
 function clock() {
-
-    // check winning or losing:
+    // check losing:
+    for (let x = 0; x < GRID_W; x++) {
+        if (board_array[x] !== 0 && board_array[x] !== -1) {
+            alert("Lost!");
+            return;
+        }
+    }
 
     // move the piece down:
-    if (!checkPos(piece_pos + GRID_W)) {
+    if (!checkPos(piece_pos + GRID_W, piece_array)) {
         lockAndDrawBoard();
         current_piece = Math.floor(Math.random() * 7 + 1);
         console.log("current piece", current_piece)
         setPiece(current_piece);
+
     } else {
         unDrawPiece();
         piece_pos+= GRID_W;
@@ -223,7 +256,6 @@ function clock() {
 
     // check for tetris and do animation too:
     checkBoard();
-
     setTimeout(clock, 1000/FPS)
 }
 
@@ -239,13 +271,27 @@ document.addEventListener("keydown", (e)=> {
         new_pos--;
     } else if (e.key == "ArrowRight") {
         new_pos++;
-    }
+    } 
 
+    let temp_piece_array = piece_array;
+    if (e.key == "ArrowUp") {
+        temp_piece_array = new Array(piece_array.length);
+        temp_piece_array.fill(0);
+        for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+            for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+                if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
+                    let [new_x, new_y] = rotateClockWise(x,y);
+                    temp_piece_array[new_y*BLOCK_AREA_WIDTH + new_x] = 1; 
+                }
+            }
+        }
+    }
     // checking: legit:
-    let rs = checkPos(new_pos, direction);
+    let rs = checkPos(new_pos, temp_piece_array);
     if (rs) {
         // undraw the piece:
         unDrawPiece();
+        piece_array = temp_piece_array;
         piece_pos = new_pos;
     }
 
