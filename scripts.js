@@ -11,12 +11,13 @@ CENTER_PIECE_Y = 2;
 
 
 // game variables:
+var tetris  = false;
 piece_pos = START_POS;
 piece_array = new Array(4*4);
 board_array = new Array(GRID_W*GRID_H);
 board_array.fill(0);
 current_piece = Math.floor(Math.random() * 7 + 1);
-// current_piece = 1;
+// current_piece = 4;
 // intialising:
     // make grid:
 for (let y = 0; y < GRID_H; y++) {
@@ -137,7 +138,7 @@ function checkPos(new_pos, array) {
 
 }
 
-function lockAndDrawBoard() {
+function lockBoard() {
     for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
         for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
             if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
@@ -149,7 +150,70 @@ function lockAndDrawBoard() {
 
 }
 
-function checkBoard() {
+function cascadeBoard(y) {
+    for (let i = y; i >0 ; i--) {
+        for (let j = 1; j < GRID_W-1; j++) {
+            board_array[i*GRID_W + j] = board_array[i*GRID_W + j - GRID_W];
+        }
+    }
+}
+
+function getTetrisLines() {
+    let tetris = []
+    for (let y = GRID_H-2; y > 0; y--) {
+        for (let x = 1; x < GRID_W-1; x++) {
+            if (!board_array[y*GRID_W + x]) {
+                break;
+            }
+            if (x === GRID_W -2) {
+                tetris.push(y);
+            }
+        }
+    }
+    return tetris;
+}
+
+function deleteTetris() {
+
+    let lines = getTetrisLines();
+
+    // update board data:
+        for (let y = GRID_H-2; y > 0; y--) {
+            for (let x = 1; x < GRID_W-1; x++) {
+            if (!board_array[y*GRID_W + x]) {
+                break;
+            }
+            if (x === GRID_W -2) {
+                cascadeBoard(y);
+                y++;
+            }
+        }
+    }
+
+    // animation:
+    if (lines.length !== 0) {
+        let x = 1;
+        setTimeout( () => {
+            tetris_ani(x,lines);
+        } , 50);
+    }
+
+}   
+
+function tetris_ani(x, lines) {
+    console.log("ani run")
+
+    for (let line of lines) {
+        grid.children[line*GRID_W + x].classList.add("tetris");
+    }
+    if (x === GRID_W - 2) {
+        tetris = true;
+        return; 
+    }
+    x++;
+    setTimeout( () => {
+        tetris_ani(x,lines);
+    } , 50);
 }
 
 function removeSquare(pos) {
@@ -189,38 +253,34 @@ function drawSquare(pos, piece) {
 }
 
 function drawPiece() {
-        for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
-            for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
-                if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
-                    let pos = piece_pos + y*GRID_W + x;
-                    if (pos < 0) {
-                        continue;
-                    } else {
-                        drawSquare(pos, current_piece);
-                    }
+    for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+        for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+            if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
+                let pos = piece_pos + y*GRID_W + x;
+                if (pos < 0) {
+                    continue;
+                } else {
+                    drawSquare(pos, current_piece);
                 }
             }
         }
-
-    
+    }
 }
 
 function unDrawPiece() {
-        for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
-            for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
-                if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
-                    let pos = piece_pos + y*GRID_W + x;
-                    if (pos < 0) {
-                        continue;
-                    } else {
-                        removeSquare(pos, current_piece);
-                    }
+    for (let x = 0; x < BLOCK_AREA_WIDTH; x++) {
+        for (let y = 0; y < BLOCK_AREA_WIDTH; y++) {
+            if (piece_array[y*BLOCK_AREA_WIDTH + x]) {
+                let pos = piece_pos + y*GRID_W + x;
+                if (pos < 0) {
+                    continue;
+                } else {
+                    removeSquare(pos, current_piece);
                 }
             }
         }
-
+    }
 }
-
 
 function rotateClockWise(x,y) {
     let [rel_x, rel_y] =  [x - CENTER_PIECE_X, y - CENTER_PIECE_Y];
@@ -232,6 +292,16 @@ function rotateClockWise(x,y) {
 setTimeout(clock, 1000/FPS)
 
 function clock() {
+    if (tetris) {
+        for (let i = GRID_H-2; i >=0 ; i--) {
+            for (let j = 1; j < GRID_W-1; j++) {
+                removeSquare(i*GRID_W +j);
+                drawSquare(i*GRID_W + j, board_array[i*GRID_W + j]);
+            }
+        }
+        tetris = false;
+    }
+
     // check losing:
     for (let x = 0; x < GRID_W; x++) {
         if (board_array[x] !== 0 && board_array[x] !== -1) {
@@ -242,8 +312,10 @@ function clock() {
 
     // move the piece down:
     if (!checkPos(piece_pos + GRID_W, piece_array)) {
-        lockAndDrawBoard();
+        lockBoard();
+        deleteTetris(); // do animation and update new board data
         current_piece = Math.floor(Math.random() * 7 + 1);
+        // current_piece = 4;
         console.log("current piece", current_piece)
         setPiece(current_piece);
 
@@ -255,7 +327,6 @@ function clock() {
 
 
     // check for tetris and do animation too:
-    checkBoard();
     setTimeout(clock, 1000/FPS)
 }
 
@@ -264,7 +335,6 @@ function clock() {
 document.addEventListener("keydown", (e)=> {
     console.log("1")
     let new_pos = piece_pos;
-    let direction = e.key;
     if (e.key == "ArrowDown") {
         new_pos+= GRID_W;
     } else if (e.key == "ArrowLeft") {
@@ -299,4 +369,3 @@ document.addEventListener("keydown", (e)=> {
     // draw new piece:
     drawPiece();
 })
-

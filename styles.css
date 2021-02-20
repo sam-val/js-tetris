@@ -26,6 +26,7 @@
     background: black;
 }
 
+
 .border {
     background: rgb(50,50,50);
     border-color:slategrey;
@@ -56,4 +57,8 @@
 }
 .sBlock {
     background: green;
+}
+.tetris {
+    background-color: black;
+    transition: background-color 250ms linear;
 }
